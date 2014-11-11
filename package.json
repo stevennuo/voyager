@@ -2,14 +2,11 @@
   "name": "Enterprise",
   "version": "1.0.0",
   "description": "Enterprise is a spacecraft(DataFactory) carring serveral crews(tasks).",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "factory": "node enterprise.js",
-    "app": "node app.js",
+    "app": "node index.js",
     "test": "node test/test.js",
-    "server": "node server.js",
-    "production": "NODE_ENV=production pm2 start process.json",
-    "cronjob": "NODE_ENV=production /usr/bin/node /home/master/enterprise/app.js"
+    "server": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -20,7 +17,7 @@
     "big data",
     "data analysis"
   ],
-  "author": "lsong, gynsolomon",
+  "author": "lsong",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/guanghetv/enterprise/issues"
