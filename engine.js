@@ -25,7 +25,7 @@ Engine.STATUS = {
 Engine.prototype.init = function(callback){
 	var engine = this;
 	this.cache = redis.createClient();
-	mongoose.connect('mongodb://localhost:27017/teacher-dashboard', function(err, db){
+	mongoose.connect('mongodb://localhost/teacher-dashboard', function(err, db){
 		callback(engine);
 	});
 };
@@ -116,11 +116,24 @@ Engine.prototype.run = function(name){
 Engine.prototype.load = function(){
 	var engine = this;
 	engine.modules = [];
-	engine.filters = [];
+	engine.filters = {};
 	var list =	['tasks/overview.js' ];
 	list.forEach(function(filename){
 		require('./' + filename)(engine);
 	});
+
+	var filters = [
+		'AnswerProblem',
+		'FinishLesson',
+		'FinishProblemSet',
+		'FinishVideo',
+		'StartLesson',
+		'StartProblemSet'
+	];
+	filters.forEach(function(filename){
+		require('./filters/' + filename)(engine);
+	});
+
 };
 
 Engine.prototype.task = function(name, func){
@@ -130,8 +143,18 @@ Engine.prototype.task = function(name, func){
 	};
 };
 
-Engine.prototype.log = function(log){
-	console.log(log);
+
+
+Engine.prototype.filter = function(name, exports){
+	this.filters[ name ] = exports;
+};
+
+Engine.prototype.filterAttribute = function(obj, attrs){
+	if(!obj) return obj;
+	var values = _.map(attrs, function(attr){
+		return obj.hasOwnProperty(attr);
+	});
+	if(_.every(values)) return _.pick(obj, attrs);
 };
 
 

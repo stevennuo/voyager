@@ -26,10 +26,14 @@
   "dependencies": {
     "async": "^0.9.0",
     "colors": "^1.0.3",
+    "express": "^4.10.2",
+    "express-log": "^1.0.1",
+    "hiredis": "^0.1.17",
     "mongodb": "^1.4.19",
     "mongoose": "~3.8.14",
     "progress": "^1.1.8",
     "promise": "^6.0.1",
+    "redis": "^0.12.1",
     "request": "~2.39.0",
     "underscore": "^1.6.0"
   }

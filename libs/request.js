@@ -19,19 +19,11 @@ module.exports = function(engine){
 			method: 'POST'
 		}, function(err, res, body){
 				if(err || !body  || res.statusCode != 200){
-					callback(new Error('login error', err));
+					return callback(new Error('login error', err));
 				}
 				options.jar = jar;
 				var req = request(options, function(err, res, body){
-					if(err){
-						callback(err);
-					}else{
-						try{
-							callback(err, JSON.parse(body));
-						}catch(e){
-							callback(e);
-						}
-					}
+					callback(err, (body && JSON.parse(body)) || body);
 				});
 				req.on('response', function(res){
 					console.log('%s %s',options.method.green, options.url.gray);
