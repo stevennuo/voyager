@@ -79,13 +79,26 @@ app.get('/stats/individuals', function(req, res){
 	});
 });
 
-app.get('/rooms', function(req, res){
+app.get('/stats/rooms', function(req, res){
 	var chapterId = req.query['chapterId'];
 	var roomId 		= req.query['roomId'];
 	individuals(chapterId, roomId, function(err, results){
-		res.send(_.map(results, function(user){
-			return toLessonify(user);
-		}));
+		var lessonify = {};
+		results.forEach(function(user){
+			for(var lessonId in user.stats){
+				lessonify[ lessonId ] = lessonify[ lessonId ] || {};
+				var stats = user.stats[lessonId];
+				for(var eventKey in stats){
+					var tracks = stats[ eventKey ];
+					lessonify[ lessonId ][ eventKey ] = lessonify[ lessonId ][ eventKey ] || [];
+					tracks.forEach(function(track){
+						track.userId = user.userId;
+						lessonify[ lessonId ][ eventKey ].push(track);
+					});
+				}
+			}
+		});
+		res.send(lessonify);
 	});
 });
 
