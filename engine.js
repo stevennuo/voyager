@@ -230,8 +230,8 @@ Engine.prototype.request = function(options, callback){
       });
   }).form();
 
-  form.append('username', 'admin1');
-  form.append('password', 'xiaoshu815');
+  form.append('username', this.config('username'));
+  form.append('password', this.condig('password'));
 };
 
 

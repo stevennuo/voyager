@@ -3,11 +3,15 @@ module.exports = function(engine){
     return ({
       development: {
         api:  'http://localhost:3000',
-        db:   'mongodb://localhost/teacher-dashboard'
+        db:   'mongodb://localhost/teacher-dashboard',
+        username: 'admin1',
+        password: 'xiaoshu815'
       },
       production: {
         api:  'http://yangcong345.com',
-        db:   'mongodb://localhost/teacher-dashboard'
+        db:   'mongodb://localhost/teacher-dashboard',
+        username: 'admin1',
+        password: 'xiaoshu815'
       }
     })[ env ];
   });
