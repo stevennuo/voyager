@@ -4,8 +4,8 @@
   "description": "Enterprise is a spacecraft(DataFactory) carring serveral crews(tasks).",
   "main": "index.js",
   "scripts": {
-    "app": "node index.js",
-    "test": "node test/test.js",
+    "app": "node index",
+    "test": "NODE_ENV=production node index",
     "server": "node server.js"
   },
   "repository": {

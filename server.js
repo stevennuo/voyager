@@ -104,6 +104,6 @@ app.get('/stats/rooms', function(req, res){
 
 
 client.connect('mongodb://localhost/teacher-dashboard', function(err, db){
-	app.listen(3002);
 	app.set('db', db);
+	app.listen(3002);
 });

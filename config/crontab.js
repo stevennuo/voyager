@@ -1,5 +1,8 @@
 module.exports = function(engine){
 	engine.cron({
-		overview	: '*/5 * * * * *'
+		// syncUser		: '* * * * * *',
+		// syncRoom		: '* * * * * *',
+		// syncCourse	: '* * * * * *',
+		getAllTracks: '* * * * * *'
 	});
 };
