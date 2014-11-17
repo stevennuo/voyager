@@ -10,7 +10,10 @@ var ProgressBar = require('progress');
 var _           = require('underscore');
 
 require('colors');
-
+/**
+ * [Engine 构造函数]
+ * @param {[type]} options [description]
+ */
 var Engine = function(options){
   this.configs = _.extend({
     config  : './config/config',
@@ -18,21 +21,23 @@ var Engine = function(options){
     tasks   : './tasks',
     filters : './filters'
   }, options);
-
+  //expose underscore
+  this._ = _;
+  //root dir
   this.root = __dirname;
-
+  //
   this.tasks = {};
   this.filters = {};
   this.crontab = {};
-
+  //load modules
   this.load();
 };
 
+//define
 ([ 'running', 'stop', 'error' ]).forEach(function(status){
   Engine[ status.toUpperCase() ] = status;
 });
 
-Engine.prototype._ = _;
 /**
  * [init func]
  * @param  {Function} callback [description]
@@ -40,13 +45,14 @@ Engine.prototype._ = _;
  */
 Engine.prototype.init = function(callback){
   var engine = this;
-  this.cache = redis.createClient();
+  engine.cache = redis.createClient();
   mongoose.connect(engine.config('db'), function(err, db){
+    require('./model');
     callback(engine);
   });
 };
 /**
- * [load description]
+ * [load load modules ]
  * @return {[type]} [description]
  */
 Engine.prototype.load = function(){
@@ -55,16 +61,14 @@ Engine.prototype.load = function(){
   require(engine.config('config'))(engine);
   //load crontab file.
   require(engine.config('crontab'))(engine);
-  //
-  require('./model');
-  //
+  //load tasks
   fs.readdir(engine.config('tasks'), function(err, files){
     files.forEach(function(filename){
       console.log('loading task: %s', filename.red);
       require(path.join(engine.root,engine.config('tasks'), filename))(engine);
     });
   });
-
+  //load filters.
   fs.readdir(engine.config('filters'), function(err, files){
     files.forEach(function(filename){
       console.log('loading filter: %s', filename.red);
@@ -72,17 +76,29 @@ Engine.prototype.load = function(){
     });
   });
 };
-
+/**
+ * [bootstrap 启动服务]
+ * @return {[type]} [description]
+ */
 Engine.prototype.bootstrap = function(){
+  //start up cron job.
   _.each(this.crontab, function(cronjob, name){
     cronjob.start();
   })
 };
-
+/**
+ * [model description]
+ * @param  {[type]} name [description]
+ * @return {[type]}      [description]
+ */
 Engine.prototype.model = function(name){
   return mongoose.model(name);
 };
-
+/**
+ * [cron 任务调度器]
+ * @param  {[type]} crontab [description]
+ * @return {[type]}         [description]
+ */
 Engine.prototype.cron = function(crontab){
   var engine = this;
   for(var job in crontab){
@@ -91,7 +107,9 @@ Engine.prototype.cron = function(crontab){
       var cronjob = new cron.CronJob(job, function(){
         if(engine.status(key) != Engine.RUNNING){
           console.log('cron: %s starting ', key.green);
-          engine.run(key);
+          engine.run(key, function(){
+            console.log('cron: %s over ', key);
+          });
         }else{
           // console.log('%s already running'.red, key);
         }
@@ -100,7 +118,12 @@ Engine.prototype.cron = function(crontab){
     })(job);
   }
 };
-
+/**
+ * [config 配置管理]
+ * @param  {[type]} key [description]
+ * @param  {[type]} val [description]
+ * @return {[type]}     [description]
+ */
 Engine.prototype.config = function(key, val){
   if(typeof key == 'function'){
     var env = process.env.NODE_ENV || 'development';
@@ -113,34 +136,57 @@ Engine.prototype.config = function(key, val){
     }
   }
 };
-
+/**
+ * [require 依赖管理]
+ * @param  {[type]}   requirement_list [description]
+ * @param  {Function} callback         [description]
+ * @return {[type]}                    [description]
+ */
 Engine.prototype.require = function(requirement_list, callback){
   var engine = this;
   var requirements = [];
   requirement_list.forEach(function(requirement_name){
-    requirements.push( require('./' + requirement_name)(engine) );
+    requirements.push( require(path.join(engine.root, requirement_name))(engine) );
   });
   callback.apply(callback, requirements);
 };
-
-
+/**
+ * [async 异步任务调度器]
+ * @param  {[type]} tasks [description]
+ * @return {[type]}       [description]
+ */
 Engine.prototype.async = function(tasks){
-  return {
-    parallel: function(callback){
-      async.parallel(tasks, callback)
-    },
-    series: function(callback){
-      async.series(tasks, callback);
-    }
-  };
+  var exports = {};
+  ([ 'series', 'parallel' ]).forEach(function(method){
+    (function(method){
+      exports[ method ] = function(callback){
+        async[ method ](tasks, callback)
+      };
+    })(method);
+  });
+  return exports;
 };
-
+/**
+ * [noop description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 Engine.prototype.noop = function(callback){};
-
+/**
+ * [promise 回调管理]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 Engine.prototype.promise = function(callback){
   return new Promise(callback)
 };
-
+/**
+ * [task description]
+ * @param  {[type]} name [description]
+ * @param  {[type]} deps [description]
+ * @param  {[type]} func [description]
+ * @return {[type]}      [description]
+ */
 Engine.prototype.task = function(name, deps, func){
   if(typeof deps == 'function'){
     func = deps;
@@ -160,7 +206,12 @@ Engine.prototype.status = function(name){
   }
   return task.status;
 };
-
+/**
+ * [run 执行任务]
+ * @param  {[type]}   name     [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 Engine.prototype.run = function(name, callback){
   var engine = this;
   var task = engine.tasks[ name ];
@@ -180,11 +231,20 @@ Engine.prototype.run = function(name, callback){
     task.exports(results, callback);
   });
 };
-
+/**
+ * [filter 过滤器]
+ * @param  {[type]} name    [description]
+ * @param  {[type]} exports [description]
+ * @return {[type]}         [description]
+ */
 Engine.prototype.filter = function(name, exports){
   this.filters[ name ] = exports;
 };
-
+/**
+ * [filterAttribute 验证和过滤字段]
+ * @param {[type]} obj   [description]
+ * @param {[type]} attrs [description]
+ */
 Engine.prototype.filterAttribute = function(obj, attrs){
   if(!obj) return obj;
   var values = _.map(attrs, function(attr){
@@ -192,7 +252,12 @@ Engine.prototype.filterAttribute = function(obj, attrs){
   });
   if(_.every(values)) return _.pick(obj, attrs);
 };
-
+/**
+ * [request 请求网络资源]
+ * @param  {[type]}   options  [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 Engine.prototype.request = function(options, callback){
   if(typeof options == 'string'){
     options = { url : options };
@@ -229,12 +294,16 @@ Engine.prototype.request = function(options, callback){
         }
       });
   }).form();
-
+  //login require
   form.append('username', this.config('username'));
-  form.append('password', this.condig('password'));
+  form.append('password', this.config('password'));
 };
-
-
+/**
+ * [exports 初始化]
+ * @param  {[type]}   options  [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 module.exports = function(options, callback){
   try{
     var engine = new Engine(options);
