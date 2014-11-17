@@ -1,12 +1,12 @@
-# Enterprise
+# Voyager
 
-Enterprise is a spacecraft(DataFactory) carrying several crews(tasks) for DataAnalysis.
+
 
 ## Installing
 
-	git clone https://github.com/guanghetv/enterprise.git enterprise
+	git clone https://github.com/guanghetv/voyager.git
 	
-	cd enterprise
+	cd voyager
 	
 	npm install
 

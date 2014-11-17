@@ -1,31 +1,32 @@
 {
-  "name": "Enterprise",
+  "name": "voyager",
   "version": "1.0.0",
-  "description": "Enterprise is a spacecraft(DataFactory) carring serveral crews(tasks).",
+  "description": "voyager",
   "main": "index.js",
   "scripts": {
     "app": "node index",
     "test": "NODE_ENV=production node index",
-    "server": "node server.js"
+    "server": "node server.js",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/guanghetv/enterprise.git"
+    "url": "https://github.com/song940/voyager.git"
   },
   "keywords": [
-    "enterprise",
     "big data",
     "data analysis"
   ],
   "author": "lsong",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/guanghetv/enterprise/issues"
+    "url": "https://github.com/song940/voyager/issues"
   },
-  "homepage": "https://github.com/guanghetv/enterprise",
+  "homepage": "https://github.com/song940/voyager.git",
   "dependencies": {
     "async": "^0.9.0",
     "colors": "^1.0.3",
+    "cron": "^1.0.5",
     "express": "^4.10.2",
     "express-log": "^1.0.1",
     "hiredis": "^0.1.17",
@@ -36,5 +37,6 @@
     "redis": "^0.12.1",
     "request": "~2.39.0",
     "underscore": "^1.6.0"
-  }
+  },
+  "devDependencies": {}
 }
