@@ -139,13 +139,17 @@ module.exports = function(engine){
       var requestQueue = [];
       var query = '/tracks?skip=$skip&limit=$limit';
       for(var i=last;i<count;i+= size){
-        (function(url){
+        (function(url, current){
           requestQueue.push(function(callback){
             engine.request(url, function(err, tracks){
-              processTracks(tracks, callback);
+              processTracks(tracks, function(err, results){
+                engine.cache.set('last', current, function(err, reply){
+                  callback(err, results);
+                });
+              });
             });
           });
-        })(query.replace('$skip', i).replace('$limit', size));
+        })(query.replace('$skip', i).replace('$limit', size), i);
       }
       //开始请求数据
       engine.async(requestQueue).series(done);

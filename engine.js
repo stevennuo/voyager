@@ -10,6 +10,7 @@ var ProgressBar = require('progress');
 var _           = require('underscore');
 
 require('colors');
+
 /**
  * [Engine 构造函数]
  * @param {[type]} options [description]
@@ -253,50 +254,76 @@ Engine.prototype.filterAttribute = function(obj, attrs){
   if(_.every(values)) return _.pick(obj, attrs);
 };
 /**
+ * [login get jar]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Engine.prototype.login = function(callback){
+  var engine = this;
+  var jar = request.jar();
+  var api = this.config('api');
+  var login = api + '/login';
+  //check cookie
+  if(engine.cookie){
+    var cookie = request.cookie(engine.cookie);
+    jar.setCookie(cookie, login);
+    return callback(null, jar);
+  }
+  //submit login form
+  var form = request({
+    jar: jar,
+    url: login,
+    method: 'POST'
+  }, function(err, res, body){
+    if(err || !body  || res.statusCode != 200){
+      return callback(new Error('login error', err));
+    }else{
+      //get login cookie.
+      engine.cookie = jar.getCookieString(login);
+      callback(err, jar);
+    }
+  }).form();
+  //require login .
+  form.append('username', this.config('username'));
+  form.append('password', this.config('password'));
+};
+/**
  * [request 请求网络资源]
  * @param  {[type]}   options  [description]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
 Engine.prototype.request = function(options, callback){
+  var engine = this;
   if(typeof options == 'string'){
     options = { url : options };
   }
-  var baseUrl = this.config('api');
-  var defaults = {
-    method: 'GET'
-  };
-  options = _.extend(defaults, options);
-  options.url = baseUrl + options.url;
-  var jar = request.jar();
-  var form = request({
-    jar: jar,
-    url: baseUrl + '/login',
-    method: 'POST'
-  }, function(err, res, body){
-      if(err || !body  || res.statusCode != 200){
-        return callback(new Error('login error', err));
+  //require login
+  this.login(function(err, jar){
+    if(err) throw err;
+    var defaults = {
+      jar: jar,
+      method: 'GET'
+    };
+    var api = engine.config('api');
+    options = _.extend(defaults, options);
+    options.url = api + options.url;
+    var req = request(options, function(err, res, body){
+      callback(err, (body && JSON.parse(body)) || body);
+    });
+    req.on('response', function(res){
+      var length = parseInt(res.headers['content-length'], 10);
+      if(length > (1 * (1024 * 1024)) ){
+        var bar = new ProgressBar('[:bar] :percent :etas', {
+          total: length
+        });
+        req.on('data', function(chunk){
+          bar.tick(chunk.length);
+        });
       }
-      options.jar = jar;
-      var req = request(options, function(err, res, body){
-        callback(err, (body && JSON.parse(body)) || body);
-      });
-      req.on('response', function(res){
-        console.log('%s %s',options.method.green, options.url.gray);
-        var length = parseInt(res.headers['content-length'], 10);
-        if(length > (1 * (1024 * 1024)) ){
-          var bar = new ProgressBar('[:bar] :percent :etas', {
-            total: length
-          });
-          req.on('data', function(chunk){
-            bar.tick(chunk.length);
-          });
-        }
-      });
-  }).form();
-  //login require
-  form.append('username', this.config('username'));
-  form.append('password', this.config('password'));
+      console.log('%s %s %sMB',options.method.green, options.url.gray, parseInt((length / 1024) / 1024) );
+    });
+  });
 };
 /**
  * [exports 初始化]

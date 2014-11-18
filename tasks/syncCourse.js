@@ -7,6 +7,7 @@ module.exports = function(engine){
   var _ = engine._;
   engine.task('syncCourse', function(options, done){
     engine.request('/api/v1/courses', function(err, courses){
+      console.log(err,courses);
       /**
        * [chapterify description]
        * @type {Object}
