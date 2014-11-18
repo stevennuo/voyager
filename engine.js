@@ -213,7 +213,7 @@ Engine.prototype.status = function(name){
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Engine.prototype.run = function(name, callback){
+Engine.prototype.run = function(name, done){
   var engine = this;
   var task = engine.tasks[ name ];
   if(!task){
@@ -229,7 +229,10 @@ Engine.prototype.run = function(name, callback){
     })(name);
   });
   engine.async(preTask).series(function(err, results){
-    task.exports(results, callback);
+    task.exports(results, function(err, result){
+      task.status = Engine.STOP;
+      if(done) done(err, result);
+    });
   });
 };
 /**
@@ -312,8 +315,9 @@ Engine.prototype.request = function(options, callback){
       callback(err, (body && JSON.parse(body)) || body);
     });
     req.on('response', function(res){
+      console.log('%s %s',options.method.green, options.url.gray);
       var length = parseInt(res.headers['content-length'], 10);
-      if(length > (1 * (1024 * 1024)) ){
+      if(length > (1 * (1024 * 1024)) ){//1 mega byte
         var bar = new ProgressBar('[:bar] :percent :etas', {
           total: length
         });
@@ -321,7 +325,6 @@ Engine.prototype.request = function(options, callback){
           bar.tick(chunk.length);
         });
       }
-      console.log('%s %s %sMB',options.method.green, options.url.gray, parseInt((length / 1024) / 1024) );
     });
   });
 };

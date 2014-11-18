@@ -48,8 +48,6 @@ module.exports = function(engine){
         // console.log(a.Answer);
       });
     }else{
-      // console.log(track);
-      // callback('AnswerProblem: track');
       callback(null);
     }
   });
