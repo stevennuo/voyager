@@ -95,28 +95,27 @@ module.exports = function(engine){
      * @param {[type]}   tracks   [description]
      * @param {Function} callback [description]
      */
-    var storeTracks = function(tracks, callback){
+    var storeTracks = function(results, callback){
       var pushTrack = [];
       var Record = engine.model('record');
       //存储数据
-      tracks.forEach(function(track){
+      results.forEach(function(result){
         pushTrack.push(function(cb){
-          (function(track){
-            Record.findOneOrCreate(track.userId, function(err, record){
+          (function(result){
+            Record.findOneOrCreate(result.userId, function(err, record){
               var stats = record.stats || {};
               stats = JSON.parse( JSON.stringify(stats) ); //fix mongoose bugs.
-              stats[ track.eventKey ] = stats[ track.eventKey ] || [];
+              stats[ result.eventKey ] = stats[ result.eventKey ] || [];
               //already contains ..
-              if(!_.findWhere(stats[ track.eventKey ], track.timestamp)){
-                stats[ track.eventKey ].push(track.track);
+              if(!_.findWhere(stats[ result.eventKey ], result.track.timestamp)){
+                stats[ result.eventKey ].push(result.track);
               }
               record.stats = stats;
               record.save(function(err, r){
                 cb(err, null);//这里没有返回 ‘r’
               });
-
             });
-          })(track);
+          })(result);
         });
       });
       //开始执行存储任务
@@ -128,8 +127,8 @@ module.exports = function(engine){
      * @param {Function} callback [description]
      */
     var processTracks = function(tracks, callback){
-      filterTracks(filterByStudent(tracks), function(err, tracks){
-        storeTracks(tracks, callback);
+      filterTracks(filterByStudent(tracks), function(err, results){
+        storeTracks(results, callback);
       });
     };
     /**
