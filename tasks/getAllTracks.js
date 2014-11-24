@@ -5,6 +5,7 @@ module.exports = function(engine){
     'syncCourse'
   ],function(options, done){
     var _ = engine._;
+    //
     var preTask = [];
     /**
      * [getCount 获取当前 Tracks 数量]
@@ -12,6 +13,7 @@ module.exports = function(engine){
      */
     preTask.push(function getCount(callback){
       engine.request('/tracks/count', function(err, result){
+        console.log('count: %j', result.count);
         callback(err, result.count);
       });
     });
@@ -21,6 +23,7 @@ module.exports = function(engine){
      */
     preTask.push(function getLast(callback){
       engine.cache.get('last', function(err, result){
+        console.log('last: ', result);
         callback(err, parseInt(result));
       });
     });
@@ -152,7 +155,9 @@ module.exports = function(engine){
         })(query.replace('$skip', i).replace('$limit', size), i);
       }
       //开始请求数据
-      engine.async(requestQueue).series(done);
+      engine.async(requestQueue).series(function(err, results){
+        engine.cache.set('last', count, done);
+      });
     };
     /**
      * [description]

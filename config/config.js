@@ -12,6 +12,12 @@ module.exports = function(engine){
         db:   'mongodb://localhost/teacher-dashboard',
         username: 'admin1',
         password: 'xiaoshu815'
+      },
+      test: {
+        api:  'http://math.yangcong-math.com',
+        db:   'mongodb://localhost/teacher-dashboard',
+        username: 'admin1',
+        password: 'xiaoshu815'
       }
     })[ env ];
   });

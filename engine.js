@@ -317,7 +317,7 @@ Engine.prototype.request = function(options, callback){
     req.on('response', function(res){
       console.log('%s %s',options.method.green, options.url.gray);
       var length = parseInt(res.headers['content-length'], 10);
-      if(length > (1 * (1024 * 1024)) ){//1 mega byte
+      if(length > (.1 * (1024 * 1024)) ){//1 mega byte
         var bar = new ProgressBar('[:bar] :percent :etas', {
           total: length
         });
