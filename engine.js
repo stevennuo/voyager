@@ -17,7 +17,7 @@ require('colors');
  */
 var Engine = function(options){
   this.configs = _.extend({
-    config  : './config/config',
+    config  : './config/config', // TODO: config -> basic | global
     crontab : './config/crontab',
     tasks   : './tasks',
     filters : './filters'
@@ -107,6 +107,7 @@ Engine.prototype.cron = function(crontab){
       var job = crontab[ key ];
       var cronjob = new cron.CronJob(job, function(){
         if(engine.status(key) != Engine.RUNNING){
+          // TODO: key.green?
           console.log('cron: %s starting ', key.green);
           engine.run(key, function(){
             console.log('cron: %s over ', key);
@@ -125,6 +126,8 @@ Engine.prototype.cron = function(crontab){
  * @param  {[type]} val [description]
  * @return {[type]}     [description]
  */
+// TODO: 虽然语法上合成一个函数，本身函数内部语义就两三种，又跟根目录下config文件夹重名，给阅读者的理解造成很大的困难，
+// TODO: 这就是没有问题制造问题也要上...强烈建议分开并分别起名(config/config->config/global|basic)!!!
 Engine.prototype.config = function(key, val){
   if(typeof key == 'function'){
     var env = process.env.NODE_ENV || 'development';
@@ -343,3 +346,4 @@ module.exports = function(options, callback){
     engine.init(callback);
   }
 };
+

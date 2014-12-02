@@ -1,0 +1,33 @@
+1. 缩进，请修改一下你的Sublime吧，不是一次两次了...
+2. API的完备性，结果不能只能输出你想要的结果，必须在描述上是完备且唯一的。
+比如我在请求某个班某个章节的信息，那么在结果中应该含有这个班和这个章节的信息
+比如：
+{
+    roomId:xxxx,
+    chapterId:xxxx,
+    stats:
+    {
+        userId:
+        stat: {}
+    }
+}
+或者
+[
+    {
+        userId:
+        roomId:
+        stat: {}
+        chapterId:
+    }
+]
+
+3. 命名，变量不要加下划线!!!全局请保持风格统一，切记!!!
+4. Task逻辑抽离 Engine目前所管控函数和逻辑过多，应该只关注本身Engine的逻辑，
+   相关业务逻辑比如login, request,
+   以及工具类比如noop, promise, async
+   应当抽离到其他地方，与Engine本身业务分离
+5. 不知道是否是我孤陋寡闻，但是在程序中发现了很多名词动词化，在阅读时非常不顺畅，无法通过函数名一次明白这个函数究竟在做什么
+   比如说Engine.task Engine.config
+   如果我写的话会写成 Engine.registerTask() 或 Engine.loadTask() 以及 Engine.loadConfig()
+
+

@@ -14,6 +14,8 @@ var app = express();
 
 app.use(logger());
 
+// TODO: Underscore已经实现了
+// TODO: _.omit(object, *keys) - Return a copy of the object, filtered to omit the blacklisted keys (or array of keys). Alternatively accepts a predicate indicating which keys to omit.
 _.mixin({
   // Return a copy of the object containing all but the blacklisted properties.
   unpick: function (obj) {
@@ -54,8 +56,11 @@ var individuals = function(chapterId, roomId, callback){
             var chapterify = toChapterify(user);
             if(chapterify[ chapterId ]) {
               stat = {
-                userId: userId,
-                stats: (chapterify[ chapterId ])
+                  userId: userId,
+                  // TODO: 保证信息的完备性
+                  // TODO: + roomId: roomId,
+                  // TODO: + chapterId: chapterId,
+                  stats: (chapterify[ chapterId ])
               };
             }
           }
@@ -85,7 +90,7 @@ app.get('/stats/rooms', function(req, res){
   individuals(chapterId, roomId, function(err, results){
     var lessonify = {};
     results.forEach(function(user){
-      for(var lessonId in user.stats){
+        for(var lessonId in user.stats){
         lessonify[ lessonId ] = lessonify[ lessonId ] || {};
         var stats = user.stats[lessonId];
         for(var eventKey in stats){
